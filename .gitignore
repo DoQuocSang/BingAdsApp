@@ -1,0 +1,52 @@
+## Build Folders
+bin/
+obj/
+out/
+
+## User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vscode/
+.idea/
+
+## ASP.NET Scaffolding
+ScaffoldingReadMe.txt
+
+## IIS & Hosting
+*.vspscc
+.vs/
+*.dbmdl
+*.pdb
+
+## Logs
+*.log
+
+## NuGet
+*.nupkg
+packages/
+*.snupkg
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+## Publish
+publish/
+wwwroot/dist/
+*.Publish.xml
+
+## Configuration files
+appsettings.*.json
+secrets.json
+
+## Others
+node_modules/
+bower_components/
+.env
+.env.*
+
+## Mac/Linux/Windows system files
+.DS_Store
+Thumbs.db
+desktop.ini
