@@ -1,146 +1,114 @@
-﻿using System.Diagnostics;
-using BingAdsWebApp.Models;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.BingAds;
 using Microsoft.BingAds.V13.CustomerManagement;
-using System.Threading.Tasks;
-using BingAdsWebApp.BingAds;
 using System.ServiceModel;
+using Microsoft.AspNetCore.Http;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http.Extensions;
-using BingAdsWebApp.Services;
+using Newtonsoft.Json;
+using System.Text;
 
-namespace BingAdsWebApp.Controllers
+namespace BingAdsDemo.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
         private readonly IConfiguration _configuration;
-        private readonly TokenService _tokenService;
-
-        private readonly BingAdsOptions _bingAdsOptions;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         private static AuthorizationData _authorizationData;
         private static ServiceClient<ICustomerManagementService> _customerManagementService;
         private static string ClientState = "ClientStateGoesHere";
         private static string _output = "";
 
-        public HomeController(
-            ILogger<HomeController> logger, 
-            IConfiguration configuration,
-            TokenService tokenService
-        )
+        public HomeController(IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
         {
-            _logger = logger;
             _configuration = configuration;
-            _tokenService = tokenService;
+            _httpContextAccessor = httpContextAccessor;
         }
 
-        /// <summary>
-        /// Controls the contents displayed at Index.cshtml.
-        /// </summary>
         public async Task<IActionResult> Index()
         {
-            //HttpContext.Session.Clear();
             try
             {
-                // If there is already an authenticated Microsoft account during this HTTP session, 
-                // go ahead and call Bing Ads API service operations.
-                var sessionAuth = HttpContext.Session.GetString("auth");
-                if (!string.IsNullOrEmpty(sessionAuth))
+                var session = _httpContextAccessor.HttpContext.Session;
+
+                OAuthWebAuthCodeGrant oAuthWebAuthCodeGrant;
+
+                var apiEnvironment = _configuration["BingAds:Environment"] == "Sandbox"
+                  ? ApiEnvironment.Sandbox
+                  : ApiEnvironment.Production;
+
+                var authTokensString = session.GetString("authTokens");
+
+                if (!String.IsNullOrWhiteSpace(authTokensString))
                 {
-                    return await SetAuthorizationDataAsync(JsonSerializer.Deserialize<OAuthWebAuthCodeGrant>(sessionAuth));
+                    var authTokens = JsonConvert.DeserializeObject<OAuthTokens>(authTokensString);
+                    oAuthWebAuthCodeGrant = new OAuthWebAuthCodeGrant(
+                        _configuration["BingAds:ClientId"],
+                        _configuration["BingAds:ClientSecret"],
+                        new Uri(_configuration["BingAds:RedirectionUri"]),
+                        authTokens,
+                        apiEnvironment,
+                         OAuthScope.MSADS_MANAGE,
+                        _configuration["BingAds:TenantId"]
+                    )
+                    {
+                        State = ClientState
+                    };
+                    return await SetAuthorizationDataAsync(oAuthWebAuthCodeGrant);
                 }
 
-                // Prepare the OAuth object for use with the authorization code grant flow. 
-
-                var apiEnvironment =
-                    _configuration["BingAds:Environment"] == ApiEnvironment.Sandbox.ToString() ?
-                    ApiEnvironment.Sandbox : ApiEnvironment.Production;
-
-                var tenantId = _configuration["BingAds:TenantId"];
-
-                var oAuthWebAuthCodeGrant = new OAuthWebAuthCodeGrant(
+                oAuthWebAuthCodeGrant = new OAuthWebAuthCodeGrant(
                     _configuration["BingAds:ClientId"],
                     _configuration["BingAds:ClientSecret"],
                     new Uri(_configuration["BingAds:RedirectionUri"]),
                     apiEnvironment,
-                    OAuthScope.MSADS_MANAGE,
-                    _configuration["BingAds:TenantId"]);
-
-                // It is recommended that you specify a non guessable 'state' request parameter to help prevent
-                // cross site request forgery (CSRF). 
-                oAuthWebAuthCodeGrant.State = ClientState;
-
-                // When calling Bing Ads API service operations with ServiceClient or BulkServiceManager, each will refresh your access token 
-                // automatically if they detect the AuthenticationTokenExpired (109) error code. 
-                // As a best practice you should always use the most recent provided refresh token.
-                // Save the refresh token whenever new OAuth tokens are received by subscribing to the NewOAuthTokensReceived event handler. 
-
-                oAuthWebAuthCodeGrant.NewOAuthTokensReceived +=
-                    (sender, args) => _tokenService.SaveRefreshToken(args.NewRefreshToken);
-
-                // If a refresh token is already present, use it to request new access and refresh tokens.
-
-                if (_tokenService.RefreshTokenExists())
+                     OAuthScope.MSADS_MANAGE,
+                    _configuration["BingAds:TenantId"]
+                )
                 {
-                    await oAuthWebAuthCodeGrant.RequestAccessAndRefreshTokensAsync(_tokenService.GetRefreshToken());
+                    State = ClientState
+                };
 
-                    // Save the authentication object in a session for future requests.
-                    HttpContext.Session.SetString("auth", JsonSerializer.Serialize(oAuthWebAuthCodeGrant));
+                oAuthWebAuthCodeGrant.NewOAuthTokensReceived += (sender, args) =>
+                {
+                    SaveRefreshToken(args.NewRefreshToken);
+                };
 
+                if (RefreshTokenExists())
+                {
+                    await oAuthWebAuthCodeGrant.RequestAccessAndRefreshTokensAsync(GetRefreshToken());
+                    SaveAuthTokensToSession(oAuthWebAuthCodeGrant);
                     return await SetAuthorizationDataAsync(oAuthWebAuthCodeGrant);
                 }
 
-                // If the current HTTP request is a callback from the Microsoft Account authorization server,
-                // use the current request url containing authorization code to request new access and refresh tokens
-                if (!string.IsNullOrEmpty(HttpContext.Request.Query["code"]))
+                if (Request.Query.ContainsKey("code"))
                 {
-                    if (oAuthWebAuthCodeGrant.State != ClientState)
+                    if (Request.Query["state"] != ClientState)
                         throw new HttpRequestException("The OAuth response state does not match the client request state.");
 
-                    //await oAuthWebAuthCodeGrant.RequestAccessAndRefreshTokensAsync(HttpContext.Request.Query["code"]);
-                    var responseUri= new Uri(HttpContext.Request.GetDisplayUrl());
-                    await oAuthWebAuthCodeGrant.RequestAccessAndRefreshTokensAsync(responseUri);
-
-                    // Save the authentication object in a session for future requests. 
-                    HttpContext.Session.SetString("auth", JsonSerializer.Serialize(oAuthWebAuthCodeGrant));
-
+                    await oAuthWebAuthCodeGrant.RequestAccessAndRefreshTokensAsync(new Uri(Request.GetEncodedUrl()));
+                    SaveAuthTokensToSession(oAuthWebAuthCodeGrant);
                     return await SetAuthorizationDataAsync(oAuthWebAuthCodeGrant);
                 }
 
-                _tokenService.SaveRefreshToken(oAuthWebAuthCodeGrant.OAuthTokens?.RefreshToken);
+                SaveRefreshToken(oAuthWebAuthCodeGrant.OAuthTokens?.RefreshToken);
 
-                // If there is no refresh token saved and no callback from the authorization server, 
-                // then connect to the authorization server and request user consent. 
                 return Redirect(oAuthWebAuthCodeGrant.GetAuthorizationEndpoint().ToString());
             }
-            // Catch authentication exceptions
-            //catch (OAuthTokenRequestException ex)
-            //{
-            //    ViewBag.Errors = (string.Format("Couldn't get OAuth tokens. Error: {0}. Description: {1}",
-            //        ex.Details.Error, ex.Details.Description));
-            //    return View();
-            //}
-
             catch (OAuthTokenRequestException ex)
             {
-                var errorMessage = $"Couldn't get OAuth tokens.\nError: {ex.Details.Error}\nDescription: {ex.Details.Description}";
-                ViewBag.Errors = errorMessage;
-
-                Console.WriteLine(errorMessage);
+                ViewBag.Errors = $"Couldn't get OAuth tokens. Error: {ex.Details.Error}. Description: {ex.Details.Description}";
                 return View();
-            } 
-            // Catch Customer Management service exceptions
+            }
             catch (FaultException<Microsoft.BingAds.V13.CustomerManagement.AdApiFaultDetail> ex)
             {
-                ViewBag.Errors = (string.Join("; ", ex.Detail.Errors.Select(
-                    error => string.Format("{0}: {1}", error.Code, error.Message))));
+                ViewBag.Errors = string.Join("; ", ex.Detail.Errors.Select(error => $"{error.Code}: {error.Message}"));
                 return View();
             }
             catch (FaultException<Microsoft.BingAds.V13.CustomerManagement.ApiFault> ex)
             {
-                ViewBag.Errors = (string.Join("; ", ex.Detail.OperationErrors.Select(
-                    error => string.Format("{0}: {1}", error.Code, error.Message))));
+                ViewBag.Errors = string.Join("; ", ex.Detail.OperationErrors.Select(error => $"{error.Code}: {error.Message}"));
                 return View();
             }
             catch (Exception ex)
@@ -150,9 +118,6 @@ namespace BingAdsWebApp.Controllers
             }
         }
 
-        /// <summary>
-        /// Adds a campaign to an account of the current authenticated user. 
-        /// </summary>
         private async Task<IActionResult> SetAuthorizationDataAsync(Authentication authentication)
         {
             _authorizationData = new AuthorizationData
@@ -163,13 +128,8 @@ namespace BingAdsWebApp.Controllers
 
             _customerManagementService = new ServiceClient<ICustomerManagementService>(_authorizationData);
 
-            var getUserRequest = new GetUserRequest
-            {
-                UserId = null
-            };
-
-            var getUserResponse =
-                (await _customerManagementService.CallAsync((s, r) => s.GetUserAsync(r), getUserRequest));
+            var getUserRequest = new GetUserRequest { UserId = null };
+            var getUserResponse = await _customerManagementService.CallAsync((s, r) => s.GetUserAsync(r), getUserRequest);
             var user = getUserResponse.User;
 
             var predicate = new Predicate
@@ -179,62 +139,49 @@ namespace BingAdsWebApp.Controllers
                 Value = user.Id.ToString()
             };
 
-            var paging = new Paging
-            {
-                Index = 0,
-                Size = 10
-            };
-
             var searchAccountsRequest = new SearchAccountsRequest
             {
-                Ordering = null,
-                PageInfo = paging,
+                PageInfo = new Paging { Index = 0, Size = 10 },
                 Predicates = new[] { predicate }
             };
 
-            var searchAccountsResponse =
-                (await _customerManagementService.CallAsync((s, r) => s.SearchAccountsAsync(r), searchAccountsRequest));
-
+            var searchAccountsResponse = await _customerManagementService.CallAsync((s, r) => s.SearchAccountsAsync(r), searchAccountsRequest);
             var accounts = searchAccountsResponse.Accounts.ToArray();
-            if (accounts.Length <= 0) return View();
+            if (accounts.Length == 0) return View();
 
             _authorizationData.AccountId = (long)accounts[0].Id;
             _authorizationData.CustomerId = (int)accounts[0].ParentCustomerId;
 
             OutputArrayOfAdvertiserAccount(accounts);
-
             ViewBag.Accounts = _output;
             _output = null;
 
             return View();
         }
 
-        public IActionResult Privacy()
+        private void SaveAuthTokensToSession(OAuthWebAuthCodeGrant auth)
         {
-            return View();
+            var session = _httpContextAccessor.HttpContext.Session;
+            var authString = JsonConvert.SerializeObject(auth.OAuthTokens);
+            session.SetString("authTokens", authString);
         }
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
+        private void SaveRefreshToken(string refreshToken)
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            _httpContextAccessor.HttpContext.Session.SetString("RefreshToken", refreshToken ?? string.Empty);
         }
 
+        private bool RefreshTokenExists()
+        {
+            return !string.IsNullOrEmpty(_httpContextAccessor.HttpContext.Session.GetString("RefreshToken"));
+        }
+
+        private string GetRefreshToken()
+        {
+            return _httpContextAccessor.HttpContext.Session.GetString("RefreshToken");
+        }
 
         #region OutputHelpers
-
-        /**
-         * You can extend the app with example output helpers at:
-         * https://github.com/BingAds/BingAds-dotNet-SDK/tree/main/examples/BingAdsExamples/BingAdsExamplesLibrary/v13
-         * 
-         * AdInsightExampleHelper.cs
-         * BulkExampleHelper.cs
-         * CampaignManagementExampleHelper.cs
-         * CustomerBillingExampleHelper.cs
-         * CustomerManagementExampleHelper.cs
-         * ReportingExampleHelper.cs
-         **/
-
         private static void OutputArrayOfAdvertiserAccount(IList<AdvertiserAccount> dataObjects)
         {
             if (null != dataObjects)
@@ -343,7 +290,6 @@ namespace BingAdsWebApp.Controllers
         {
             _output += (msg + "<br/>");
         }
-
-        #endregion OutputHelpers
+        #endregion
     }
 }

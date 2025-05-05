@@ -1,9 +1,4 @@
-using BingAdsWebApp.BingAds;
-using BingAdsWebApp.Models;
-using BingAdsWebApp.Services;
-using Microsoft.Extensions.DependencyInjection;
-
-namespace BingAdsWebApp
+namespace BIngAdsDemo
 {
     public class Program
     {
@@ -11,18 +6,11 @@ namespace BingAdsWebApp
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            builder.Services.AddHttpContextAccessor();
+
             // Add services to the container.
             builder.Services.AddControllersWithViews();
-            builder.Services.Configure<BingAdsOptions>(builder.Configuration.GetSection("BingAds"));
-            builder.Services.AddSession(options =>
-            {
-                options.IdleTimeout = TimeSpan.FromMinutes(30);
-                options.Cookie.HttpOnly = true;
-                options.Cookie.IsEssential = true;
-            });
-
-            // Service
-            builder.Services.AddScoped<TokenService>();
+            builder.Services.AddSession();
 
             var app = builder.Build();
 
@@ -34,12 +22,12 @@ namespace BingAdsWebApp
                 app.UseHsts();
             }
 
+            app.UseSession();
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
             app.UseRouting();
 
-            app.UseSession();
 
             app.UseAuthorization();
 
