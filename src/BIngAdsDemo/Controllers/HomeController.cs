@@ -157,9 +157,13 @@ namespace BingAdsDemo.Controllers
             ViewBag.Accounts = _output;
             _output = null;
 
-            var adExtension = new AdExtensions();
+            // Ad Extension example
+            //var adExtension = new AdExtensions();
+            //adExtension.RunAsync(_authorizationData);
 
-            adExtension.RunAsync(_authorizationData);
+            // Reponsive Search Ads example
+            var reponsiveSearchAd = new ResponsiveSearchAds();
+            reponsiveSearchAd.RunAsync(_authorizationData);
 
             return View();
         }
