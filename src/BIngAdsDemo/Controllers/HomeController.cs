@@ -8,6 +8,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Http.Extensions;
 using Newtonsoft.Json;
 using System.Text;
+using BIngAdsDemo.BingAds;
 
 namespace BingAdsDemo.Controllers
 {
@@ -155,6 +156,10 @@ namespace BingAdsDemo.Controllers
             OutputArrayOfAdvertiserAccount(accounts);
             ViewBag.Accounts = _output;
             _output = null;
+
+            var adExtension = new AdExtensions();
+
+            adExtension.RunAsync(_authorizationData);
 
             return View();
         }
