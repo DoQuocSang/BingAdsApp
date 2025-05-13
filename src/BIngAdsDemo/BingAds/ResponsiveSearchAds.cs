@@ -1,9 +1,9 @@
 ﻿using Microsoft.BingAds.V13.CampaignManagement;
 using Microsoft.BingAds;
 using System.ServiceModel;
-using BIngAdsDemo.BingAdsExampleLibrary.v13;
+using BingAdsDemo.BingAdsExampleLibrary.v13;
 
-namespace BIngAdsDemo.BingAds
+namespace BingAdsDemo.BingAds
 {
     /// <summary>
     /// How to add responsive search ads in a new ad group.
@@ -32,7 +32,7 @@ namespace BIngAdsDemo.BingAds
                 var campaigns = new[]{
                     new Campaign
                     {
-                        Name = "Everyone's Shoes " + DateTime.UtcNow,
+                        Name = "Campaign for Responsive Search Ads Demo " + DateTime.UtcNow,
                         BudgetId = null,
                         DailyBudget = 50,
                         BudgetType = BudgetLimitType.DailyBudgetStandard,
@@ -177,11 +177,11 @@ namespace BIngAdsDemo.BingAds
 
                 // Delete the campaign and everything it contains e.g., ad groups and ads.
 
-                //OutputStatusMessage("-----\nDeleteCampaigns:");
-                //await CampaignManagementExampleHelper.DeleteCampaignsAsync(
-                //    accountId: authorizationData.AccountId,
-                //    campaignIds: new[] { (long)campaignIds[0] });
-                //OutputStatusMessage(string.Format("Deleted Campaign Id {0}", campaignIds[0]));
+                OutputStatusMessage("-----\nDeleteCampaigns:");
+                await CampaignManagementExampleHelper.DeleteCampaignsAsync(
+                    accountId: authorizationData.AccountId,
+                    campaignIds: new[] { (long)campaignIds[0] });
+                OutputStatusMessage(string.Format("Deleted Campaign Id {0}", campaignIds[0]));
             }
             // Catch authentication exceptions
             catch (OAuthTokenRequestException ex)

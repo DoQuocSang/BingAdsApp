@@ -8,7 +8,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Http.Extensions;
 using Newtonsoft.Json;
 using System.Text;
-using BIngAdsDemo.BingAds;
+using BingAdsDemo.BingAds;
 
 namespace BingAdsDemo.Controllers
 {
@@ -158,12 +158,16 @@ namespace BingAdsDemo.Controllers
             _output = null;
 
             // Ad Extension example
-            //var adExtension = new AdExtensions();
-            //adExtension.RunAsync(_authorizationData);
+            var adExtension = new AdExtensions();
+            adExtension.RunAsync(_authorizationData);
 
             // Reponsive Search Ads example
             var reponsiveSearchAd = new ResponsiveSearchAds();
             reponsiveSearchAd.RunAsync(_authorizationData);
+
+            // Responsive Ads example
+            var reponsiveAd = new ResponsiveAds();
+            reponsiveAd.RunAsync(_authorizationData);
 
             return View();
         }

@@ -1,4 +1,4 @@
-namespace BIngAdsDemo.Models
+namespace BingAdsDemo.Models
 {
     public class ErrorViewModel
     {

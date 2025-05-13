@@ -2,9 +2,9 @@
 using Microsoft.BingAds;
 using System.ServiceModel;
 using System.Drawing.Imaging;
-using BIngAdsDemo.BingAdsExampleLibrary.v13;
+using BingAdsDemo.BingAdsExampleLibrary.v13;
 
-namespace BIngAdsDemo.BingAds
+namespace BingAdsDemo.BingAds
 {
     public class AdExtensions : ExampleBase
     {
@@ -41,7 +41,7 @@ namespace BIngAdsDemo.BingAds
                         CampaignType = CampaignType.Search,
                         DailyBudget = 50,
                         Languages = new string[] { "All" },
-                        Name = "Campaign made by code " + DateTime.UtcNow,
+                        Name = "Campaign for Ad Extension Demo " + DateTime.UtcNow,
                         TimeZone = "Pacific Standard Time",
                     }
                 };

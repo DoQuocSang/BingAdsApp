@@ -1,6 +1,6 @@
 ﻿using Microsoft.BingAds.V13.CampaignManagement;
 
-namespace BIngAdsDemo.BingAdsExampleLibrary.v13
+namespace BingAdsDemo.BingAdsExampleLibrary.v13
 {
     public abstract class ExampleBase : BingAdsExamplesLibrary.ExampleBase
     {

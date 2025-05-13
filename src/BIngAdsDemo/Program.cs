@@ -1,4 +1,4 @@
-namespace BIngAdsDemo
+namespace BingAdsDemo
 {
     public class Program
     {
