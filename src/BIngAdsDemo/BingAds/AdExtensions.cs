@@ -291,6 +291,35 @@ namespace BingAdsDemo.BingAds
                 OutputStatusMessage("NestedPartialErrors:");
                 CampaignManagementExampleHelper.OutputArrayOfBatchErrorCollection(addAdExtensionsResponse?.NestedPartialErrors);
 
+                // Add Ad Groups to the campaign.
+
+                var adGroups = new[] {
+                    new AdGroup
+                    {
+                        Name = "Ad Group for ad extensions",
+                        StartDate = null,
+                        EndDate = new Date {
+                            Month = 12,
+                            Day = 31,
+                            Year = DateTime.UtcNow.Year + 1
+                        },
+                        CpcBid = new Bid { Amount = 0.09 },
+                    }
+                };
+
+                OutputStatusMessage("-----\nAddAdGroups:");
+                AddAdGroupsResponse addAdGroupsResponse = await CampaignManagementExampleHelper.AddAdGroupsAsync(
+                    campaignId: (long)campaignIds[0],
+                    adGroups: adGroups,
+                    returnInheritedBidStrategyTypes: false);
+                long?[] adGroupIds = addAdGroupsResponse.AdGroupIds.ToArray();
+                BatchError[] adGroupErrors = addAdGroupsResponse.PartialErrors.ToArray();
+                OutputStatusMessage("AdGroupIds:");
+                CampaignManagementExampleHelper.OutputArrayOfLong(adGroupIds);
+                OutputStatusMessage("PartialErrors:");
+                CampaignManagementExampleHelper.OutputArrayOfBatchError(adGroupErrors);
+
+
                 // DeleteAdExtensionsAssociations, SetAdExtensionsAssociations, and GetAdExtensionsEditorialReasons 
                 // operations each require a list of type AdExtensionIdToEntityIdAssociation.
                 var adExtensionIdToEntityIdAssociations = new List<AdExtensionIdToEntityIdAssociation>();
@@ -315,7 +344,7 @@ namespace BingAdsDemo.BingAds
                     }
                 }
 
-                // Associate the ad extensions with the campaign. 
+                // Associate the ad extensions with the Ad Group 
 
                 OutputStatusMessage("-----\nSetAdExtensionsAssociations:");
                 var setAdExtensionsAssociationsResponse = await CampaignManagementExampleHelper.SetAdExtensionsAssociationsAsync(
@@ -338,6 +367,75 @@ namespace BingAdsDemo.BingAds
                 CampaignManagementExampleHelper.OutputArrayOfAdExtensionEditorialReasonCollection(adExtensionEditorialReasonCollection);
                 OutputStatusMessage("PartialErrors:");
                 CampaignManagementExampleHelper.OutputArrayOfBatchError(getAdExtensionsEditorialReasonsResponse?.PartialErrors);
+
+                // Add Ads to the Ad Group
+                var ads = new Ad[] {
+                    new ResponsiveSearchAd
+                    {
+                        Descriptions = new AssetLink []
+                        {
+                            new AssetLink
+                            {
+                                Asset = new TextAsset
+                                {
+                                    Text = "Find New Customers & Increase Sales!"
+                                },
+                                PinnedField = "Description1"
+                            },
+                            new AssetLink
+                            {
+                                Asset = new TextAsset
+                                {
+                                    Text = "Start Advertising on Contoso Today."
+                                },
+                                PinnedField = "Description2"
+                            },
+                        },
+                        Headlines = new AssetLink []
+                        {
+                            new AssetLink
+                            {
+                                Asset = new TextAsset
+                                {
+                                    Text = "Contoso"
+                                },
+                                PinnedField = "Headline1"
+                            },
+                            new AssetLink
+                            {
+                                Asset = new TextAsset
+                                {
+                                    Text = "Quick & Easy Setup"
+                                },
+                                PinnedField = null
+                            },
+                            new AssetLink
+                            {
+                                Asset = new TextAsset
+                                {
+                                    Text = "Seemless Integration"
+                                },
+                                PinnedField = null
+                            },
+                        },
+                        Path1 = "seattle",
+                        Path2 = "shoe sale",
+                        FinalUrls = new[] {
+                            "https://www.contoso.com/womenshoesale"
+                        },
+                    },
+                };
+
+                OutputStatusMessage("-----\nAddAds:");
+                AddAdsResponse addAdsResponse = await CampaignManagementExampleHelper.AddAdsAsync(
+                    adGroupId: (long)adGroupIds[0],
+                    ads: ads);
+                long?[] adIds = addAdsResponse.AdIds.ToArray();
+                BatchError[] adErrors = addAdsResponse.PartialErrors.ToArray();
+                OutputStatusMessage("AdIds:");
+                CampaignManagementExampleHelper.OutputArrayOfLong(adIds);
+                OutputStatusMessage("PartialErrors:");
+                CampaignManagementExampleHelper.OutputArrayOfBatchError(adErrors);
 
                 // Get only the location ad extensions and then remove scheduling.
 
