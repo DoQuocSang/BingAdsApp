@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Newtonsoft.Json;
 using System.Text;
 using BingAdsDemo.BingAds;
+using BIngAdsDemo.BingAds;
 
 namespace BingAdsDemo.Controllers
 {
@@ -157,17 +158,21 @@ namespace BingAdsDemo.Controllers
             ViewBag.Accounts = _output;
             _output = null;
 
-            // Ad Extension example
-            var adExtension = new AdExtensions();
-            adExtension.RunAsync(_authorizationData);
+            //// Ad Extension example
+            //var adExtension = new AdExtensions();
+            //adExtension.RunAsync(_authorizationData);
 
-            // Reponsive Search Ads example
-            var reponsiveSearchAd = new ResponsiveSearchAds();
-            reponsiveSearchAd.RunAsync(_authorizationData);
+            //// Reponsive Search Ads example
+            //var reponsiveSearchAd = new ResponsiveSearchAds();
+            //reponsiveSearchAd.RunAsync(_authorizationData);
 
-            // Responsive Ads example
-            var reponsiveAd = new ResponsiveAds();
-            reponsiveAd.RunAsync(_authorizationData);
+            //// Responsive Ads example
+            //var reponsiveAd = new ResponsiveAds();
+            //reponsiveAd.RunAsync(_authorizationData);
+
+            // Customer Signup example
+            var searchUserAccounts = new SearchUserAccounts();
+            searchUserAccounts.RunAsync(_authorizationData);
 
             return View();
         }
