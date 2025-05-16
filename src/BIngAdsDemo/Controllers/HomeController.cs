@@ -174,9 +174,13 @@ namespace BingAdsDemo.Controllers
             //var searchUserAccounts = new SearchUserAccounts();
             //searchUserAccounts.RunAsync(_authorizationData);
 
+            //// Customer Signup example
+            //var clientLinks = new ClientLinks();
+            //clientLinks.RunAsync(_authorizationData);
+
             // Customer Signup example
-            var clientLinks = new ClientLinks();
-            clientLinks.RunAsync(_authorizationData);
+            var inviteUser = new InviteUser();
+            inviteUser.RunAsync(_authorizationData);
 
             return View();
         }
