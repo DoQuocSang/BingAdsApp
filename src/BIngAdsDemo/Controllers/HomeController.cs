@@ -170,17 +170,21 @@ namespace BingAdsDemo.Controllers
             //var reponsiveAd = new ResponsiveAds();
             //reponsiveAd.RunAsync(_authorizationData);
 
-            //// Customer Signup example
+            //// Search Use Accounts example
             //var searchUserAccounts = new SearchUserAccounts();
             //searchUserAccounts.RunAsync(_authorizationData);
 
-            //// Customer Signup example
+            //// Client Links example
             //var clientLinks = new ClientLinks();
             //clientLinks.RunAsync(_authorizationData);
 
+            //// Invite User example
+            //var inviteUser = new InviteUser();
+            //inviteUser.RunAsync(_authorizationData);
+
             // Customer Signup example
-            var inviteUser = new InviteUser();
-            inviteUser.RunAsync(_authorizationData);
+            var geographicalLocations = new GeographicalLocations();
+            geographicalLocations.RunAsync(_authorizationData);
 
             return View();
         }
