@@ -182,9 +182,13 @@ namespace BingAdsDemo.Controllers
             //var inviteUser = new InviteUser();
             //inviteUser.RunAsync(_authorizationData);
 
-            // Customer Signup example
-            var geographicalLocations = new GeographicalLocations();
-            geographicalLocations.RunAsync(_authorizationData);
+            //// Customer Signup example
+            //var geographicalLocations = new GeographicalLocations();
+            //geographicalLocations.RunAsync(_authorizationData);
+
+            // Negative Keywords example
+            var negativeKeywords = new NegativeKeywords();
+            negativeKeywords.RunAsync(_authorizationData);
 
             return View();
         }
