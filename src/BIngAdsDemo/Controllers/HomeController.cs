@@ -186,9 +186,13 @@ namespace BingAdsDemo.Controllers
             //var geographicalLocations = new GeographicalLocations();
             //geographicalLocations.RunAsync(_authorizationData);
 
-            // Negative Keywords example
-            var negativeKeywords = new NegativeKeywords();
-            negativeKeywords.RunAsync(_authorizationData);
+            //// Negative Keywords example
+            //var negativeKeywords = new NegativeKeywords();
+            //negativeKeywords.RunAsync(_authorizationData);
+
+            // Target Criteria example
+            var targetCriteria = new TargetCriteria();
+            targetCriteria.RunAsync(_authorizationData);
 
             return View();
         }
