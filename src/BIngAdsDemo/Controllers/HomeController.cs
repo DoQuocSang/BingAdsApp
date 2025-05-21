@@ -151,8 +151,16 @@ namespace BingAdsDemo.Controllers
             var accounts = searchAccountsResponse.Accounts.ToArray();
             if (accounts.Length == 0) return View();
 
+            Console.WriteLine("-----\n*** Current account ***\n-----");
+            Console.WriteLine($"AccountId: {accounts[0].Id}");
+            Console.WriteLine($"ParentCustomerId: {accounts[0].ParentCustomerId}");
+            Console.WriteLine($"Name: {accounts[0].Name}");
+            Console.WriteLine("-----\n*** Programstart ***\n-----");
+
             _authorizationData.AccountId = (long)accounts[0].Id;
             _authorizationData.CustomerId = (int)accounts[0].ParentCustomerId;
+
+
 
             OutputArrayOfAdvertiserAccount(accounts);
             ViewBag.Accounts = _output;
@@ -207,8 +215,12 @@ namespace BingAdsDemo.Controllers
             //searchCompanies.RunAsync(_authorizationData);
 
             //// Profile Criteria example
-            var profileCriteria = new ProfileCriteria();
-            profileCriteria.RunAsync(_authorizationData);
+            //var profileCriteria = new ProfileCriteria();
+            //profileCriteria.RunAsync(_authorizationData);
+
+            //// Budget Opportunities example
+            var budgetOpportunities = new ReportRequests();
+            budgetOpportunities.RunAsync(_authorizationData);
 
             return View();
         }

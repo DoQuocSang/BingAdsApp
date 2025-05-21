@@ -4,7 +4,7 @@ using Microsoft.BingAds.V13.CampaignManagement;
 
 namespace BingAdsDemo.BingAdsExampleLibrary.v13
 {
-    public class CampaignManagementExampleHelper : BingAdsExamplesLibrary.ExampleBase
+    public class CampaignManagementExampleHelper : ExampleBase
     {
         public override string Description
         {
