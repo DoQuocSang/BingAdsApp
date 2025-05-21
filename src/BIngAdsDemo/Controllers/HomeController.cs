@@ -182,7 +182,7 @@ namespace BingAdsDemo.Controllers
             //var inviteUser = new InviteUser();
             //inviteUser.RunAsync(_authorizationData);
 
-            //// Customer Signup example
+            //// Get Geographical Location example
             //var geographicalLocations = new GeographicalLocations();
             //geographicalLocations.RunAsync(_authorizationData);
 
@@ -190,9 +190,25 @@ namespace BingAdsDemo.Controllers
             //var negativeKeywords = new NegativeKeywords();
             //negativeKeywords.RunAsync(_authorizationData);
 
-            // Target Criteria example
-            var targetCriteria = new TargetCriteria();
-            targetCriteria.RunAsync(_authorizationData);
+            //// Target Criteria example
+            //var targetCriteria = new TargetCriteria();
+            //targetCriteria.RunAsync(_authorizationData);
+
+            //// Profile Criteria example
+            //var profileCriteria = new ProfileCriteria();
+            //profileCriteria.RunAsync(_authorizationData);
+
+            //// Get Profile Data example
+            //var profileData = new ProfileData();
+            //profileData.RunAsync(_authorizationData);
+
+            //// Search Companies example
+            //var searchCompanies = new SearchCompanies();
+            //searchCompanies.RunAsync(_authorizationData);
+
+            //// Profile Criteria example
+            var profileCriteria = new ProfileCriteria();
+            profileCriteria.RunAsync(_authorizationData);
 
             return View();
         }

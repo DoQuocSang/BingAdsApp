@@ -3054,6 +3054,19 @@ namespace BingAdsDemo.BingAdsExampleLibrary.v13
                 OutputStatusMessage("* * * End OutputCompany * * *");
             }
         }
+        public void OutputArrayOfCompanies(IList<Company> dataObjects)
+        {
+            if (null != dataObjects)
+            {
+                foreach (var dataObject in dataObjects)
+                {
+                    if (null != dataObject)
+                    {
+                        OutputCompany(dataObject);
+                    }
+                }
+            }
+        }
         public void OutputArrayOfCompany(IList<Company> dataObjects)
         {
             if (null != dataObjects)
